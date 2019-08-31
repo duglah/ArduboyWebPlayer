@@ -69,29 +69,81 @@ void Arduboy::setCursor(int16_t x, int16_t y)
 
 void Arduboy::clear()
 {
-  //fillScreen(BLACK);
+  fillScreen(BLACK);
   jsClear();
 }
-
-#define HEIGHT 128
-#define WIDTH 64
-int data[WIDTH * HEIGHT];
-int timescalled = 0;
 
 void Arduboy::display()
 {
   //this->paintScreen(sBuffer);
-
-  for (int y = 0; y < HEIGHT; y++) {
-     int yw = y * WIDTH;
-     for (int x = 0; x < WIDTH; x++) {
-       data[yw + x] = (255 << 24) | (timescalled << 8) | 255;
-     }
-   }
-   timescalled++;
-  jsDisplay(&data[0]);
+    jsDisplay(&sBuffer[0]);
 }
 
 void Arduboy::print(const char* text) {
     jsPrint(text);
+}
+
+void Arduboy::drawBitmap
+(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, 
+ uint8_t color)
+{
+  // no need to dar at all of we're offscreen
+  if (x+w < 0 || x > WIDTH-1 || y+h < 0 || y > HEIGHT-1)
+    return;
+
+  int yOffset = abs(y) % 8;
+  int sRow = y / 8;
+  if (y < 0) {
+    sRow--;
+    yOffset = 8 - yOffset;
+  }
+  int rows = h/8;
+  if (h%8!=0) rows++;
+  for (int a = 0; a < rows; a++) {
+    int bRow = sRow + a;
+    if (bRow > (HEIGHT/8)-1) break;
+    if (bRow > -2) {
+      for (int iCol = 0; iCol<w; iCol++) {
+        if (iCol + x > (WIDTH-1)) break;
+        if (iCol + x >= 0) {
+          // if (bRow >= 0) {
+          //   if      (color == WHITE) this->sBuffer[ (bRow*WIDTH) + x + iCol ] |= pgm_read_byte(bitmap+(a*w)+iCol) << yOffset;
+          //   else if (color == BLACK) this->sBuffer[ (bRow*WIDTH) + x + iCol ] &= ~(pgm_read_byte(bitmap+(a*w)+iCol) << yOffset);
+          //   else                     this->sBuffer[ (bRow*WIDTH) + x + iCol ] ^= pgm_read_byte(bitmap+(a*w)+iCol) << yOffset;
+          // }
+          // if (yOffset && bRow<(HEIGHT/8)-1 && bRow > -2) {
+          //   if      (color == WHITE) this->sBuffer[ ((bRow+1)*WIDTH) + x + iCol ] |= pgm_read_byte(bitmap+(a*w)+iCol) >> (8-yOffset);
+          //   else if (color == BLACK) this->sBuffer[ ((bRow+1)*WIDTH) + x + iCol ] &= ~(pgm_read_byte(bitmap+(a*w)+iCol) >> (8-yOffset));
+          //   else                     this->sBuffer[ ((bRow+1)*WIDTH) + x + iCol ] ^= pgm_read_byte(bitmap+(a*w)+iCol) >> (8-yOffset);
+          // }
+        }
+      }
+    }
+  }
+}
+
+void Arduboy::fillScreen(uint8_t color)
+{
+    if (color) color = 0xFF;  //change any nonzero argument to b11111111 and insert into screen array.
+    for(int16_t i=0; i<1024; i++)  { sBuffer[i] = color; }  //sBuffer = (128*64) = 8192/8 = 1024 bytes. 
+}
+
+void Arduboy::drawPixel(int x, int y, uint8_t color)
+{
+  #ifdef PIXEL_SAFE_MODE
+  if (x < 0 || x > (WIDTH-1) || y < 0 || y > (HEIGHT-1))
+  {
+    return;
+  }
+  #endif
+
+  uint8_t row = (uint8_t)y / 8;
+  if (color)
+  {
+    sBuffer[(row*WIDTH) + (uint8_t)x] |=   _BV((uint8_t)y % 8);
+  }
+  else
+  {
+    sBuffer[(row*WIDTH) + (uint8_t)x] &= ~ _BV((uint8_t)y % 8);
+  }
 }

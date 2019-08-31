@@ -1219,11 +1219,11 @@ function updateGlobalBufferViews() {
 
 
 var STATIC_BASE = 1024,
-    STACK_BASE = 36768,
+    STACK_BASE = 5008,
     STACKTOP = STACK_BASE,
-    STACK_MAX = 5279648,
-    DYNAMIC_BASE = 5279648,
-    DYNAMICTOP_PTR = 36736;
+    STACK_MAX = 5247888,
+    DYNAMIC_BASE = 5247888,
+    DYNAMICTOP_PTR = 4976;
 
 assert(STACK_BASE % 16 === 0, 'stack must start aligned');
 assert(DYNAMIC_BASE % 16 === 0, 'heap must start aligned');
@@ -1753,7 +1753,7 @@ var ASM_CONSTS = [];
 
 
 
-// STATICTOP = STATIC_BASE + 35744;
+// STATICTOP = STATIC_BASE + 3984;
 /* global initializers */ /*__ATINIT__.push();*/
 
 
@@ -1764,7 +1764,7 @@ var ASM_CONSTS = [];
 
 
 /* no memory initializer */
-var tempDoublePtr = 36752
+var tempDoublePtr = 4992
 assert(tempDoublePtr % 8 == 0);
 
 function copyTempFloat(ptr) { // functions, because inlining this code increases code size too much
@@ -1998,8 +1998,9 @@ function copyTempDouble(ptr) {
   function _jsDisplay(pointer) {
           console.log("jsDisplay")
           const ctx = document.getElementById('c').getContext('2d');
-          const data = new Uint8ClampedArray(Module.HEAP32.buffer, pointer, width * height * 4);
-          const img = new ImageData(data, width, height);
+          const data = new Uint8ClampedArray(Module.HEAP8.buffer, pointer, width * height / 8);
+          const imgData = new Uint8ClampedArray(transformImageData(data, width, height))
+          const img = new ImageData(imgData, width, height);
           ctx.putImageData(img, 0, 0);
       }
 

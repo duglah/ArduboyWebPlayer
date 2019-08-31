@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <emscripten.h>
 
 extern "C" {
@@ -14,10 +15,20 @@ extern "C" {
 	extern void jsSetFrameRate(uint8_t rate);
 	extern bool jsNextFrame();
     extern void jsSetCursor(int16_t x, int16_t y);
-	extern void jsDisplay(int* buffer);
+	extern void jsDisplay(unsigned char* buffer);
   	extern void jsPrint(const char *text);
     extern void jsClear();
 }
+
+#define WIDTH 128
+#define HEIGHT 64
+
+#define INVERT 2 //< lit/unlit pixel
+#define WHITE 1 //< lit pixel
+#define BLACK 0 //< unlit pixel
+
+#define _BV(bit) \
+	(1 << (bit)) 
 
 class Arduboy {
     public:
@@ -40,8 +51,18 @@ class Arduboy {
          */
         void display();
 
+
+        /// Draws a bitmap from program memory to a specific X/Y
+        void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color);
+        void fillScreen(uint8_t color);
+        void drawPixel(int x, int y, uint8_t color);
+  
         //<Print.h>
         void print(const char* text);
+
+    protected:
+        unsigned char sBuffer[(HEIGHT*WIDTH)/8];
+
 };
 
 #endif
