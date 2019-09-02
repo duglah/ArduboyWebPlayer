@@ -3,10 +3,16 @@
 
 #include <stdint.h>
 #include <stdio.h>
+
+
 #include <stdlib.h>
 #include <emscripten.h>
+#include "avr.h"
+#include "Arduino.h"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
     //exported functions
     void setup();
     void loop();
@@ -65,4 +71,4 @@ class Arduboy {
 
 };
 
-#endif
+#endif /* ARDUBOY_H */

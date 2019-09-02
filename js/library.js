@@ -23,7 +23,7 @@ function transformImageData(buffer, width, height) {
                 var y = page * 8 + yPixel
                 var pos = x * 4 + width * y * 4
                 
-                var color = spriteByte & (1 << (7 - yPixel))
+                var color = spriteByte & (1 << yPixel)
 
                 if(color > 0) {
                     databuffer[pos + 0] = 255
@@ -61,10 +61,14 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     },
     jsDisplay: function (pointer) {
         console.log("jsDisplay")
-        const ctx = document.getElementById('c').getContext('2d');
+        const canvas = document.getElementById('c')
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = "rgb(255, 255, 255)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         const data = new Uint8ClampedArray(Module.HEAP8.buffer, pointer, width * height / 8);
         const imgData = new Uint8ClampedArray(transformImageData(data, width, height))
         const img = new ImageData(imgData, width, height);
+        console.log("render")
         ctx.putImageData(img, 0, 0);
     },
     jsPrint: function(text) {
